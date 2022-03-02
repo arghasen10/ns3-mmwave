@@ -358,6 +358,10 @@ LteUeRrc::GetTypeId (void)
                       "trace fired upon switching to MmWave RAT",
                       MakeTraceSourceAccessor (&LteUeRrc::m_switchToMmWaveTrace),
                       "ns3::LteUeRrc::ImsiCidRntiTracedCallback")
+     .AddTraceSource ("State",
+                      "current state",
+                      MakeTraceSourceAccessor (&LteUeRrc::m_state),
+                      "ns3::TracedValueCallback::Int32")                 
      .AddAttribute ("SecondaryRRC",
                       "True if this is the RRC in charge of the secondary cell (MmWaveCell) for a MC device",
                       BooleanValue (false),
@@ -4239,7 +4243,7 @@ LteUeRrc::SwitchToState (State newState)
   m_stateTransitionTrace (m_imsi, m_cellId, m_rnti, oldState, newState);
   double idleTime;
   Callback<void, double> two;
-
+  
   switch (oldState)
   {
       case IDLE_START:

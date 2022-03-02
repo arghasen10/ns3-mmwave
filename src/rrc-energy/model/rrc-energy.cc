@@ -10,7 +10,29 @@
 #include <limits>
 namespace ns3 {
 
+static const std::string g_ueRrcStateName[17] =
+{
+  "IDLE_START",
+  "IDLE_CELL_SEARCH",
+  "IDLE_WAIT_MIB_SIB1",
+  "IDLE_WAIT_MIB",
+  "IDLE_WAIT_SIB1",
+  "IDLE_CAMPED_NORMALLY",
+  "IDLE_WAIT_SIB2",
+  "IDLE_PAGING",
+  "IDLE_RANDOM_ACCESS",
+  "IDLE_CONNECTING",
+  "CONNECTED_NORMALLY",
+  "CONNECTED_HANDOVER",
+  "CONNECTED_PHY_PROBLEM",
+  "CONNECTED_REESTABLISHING",
+  "RRC_INACTIVE",
+  "INACTIVE_PAGING",
+  "IDLE_DS"
+};
 /* ... */
+double idleTime = 0;
+Time m_lastUpdatedTime ;
 
 RrcEnergy::RrcEnergy()
 :m_time_last_tx(0),
@@ -129,6 +151,63 @@ void RrcEnergy::both_downlink_and_uplink(double idleTime)
 	double energyDecreasedIdle= 350*idleTime;
 	only_tx(energyDecreasedIdle);
 	std::cout<<"Both Transmit and Receive chain is consuming power "<<std::endl;
+}
+
+void rrcenergystatechange(int32_t oldstate, int32_t newstate)
+{
+	// //add switch states
+	// idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+	// RrcEnergy::Only_idle_decrease(idleTime);
+    
+    // m_lastUpdatedTime=Simulator::Now();
+    // std::cout<<Simulator::Now().GetSeconds()<<" "<<GetRnti() <<" ";
+    // two(idleTime);
+	switch (newstate)
+  {
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+      case 6:
+      case 7:
+      case 8:
+      case 9:
+          break;
+      case 10:
+	      idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+		  m_lastUpdatedTime=Simulator::Now();
+          Only_idle_decrease(idleTime);
+          break;
+      case 11:
+      case 12:
+      case 13:
+          break;
+      case 14:
+	      idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+          m_lastUpdatedTime=Simulator::Now();
+          Only_paging_decrease(idleTime);
+          break;
+
+      case 15:
+          
+          idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+          m_lastUpdatedTime=Simulator::Now();
+		  Only_drx_decrease(idleTime);
+          break;
+
+      case 16:
+          
+          idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+          m_lastUpdatedTime=Simulator::Now();
+          Only_deepsleep_decrease(idleTime);
+          break;
+
+      default:
+          break;
+    }
+
 }
 
 }
