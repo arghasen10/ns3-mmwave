@@ -360,7 +360,7 @@ LteUeRrc::GetTypeId (void)
                       "ns3::LteUeRrc::ImsiCidRntiTracedCallback")
      .AddTraceSource ("State",
                       "current state",
-                      MakeTraceSourceAccessor (&LteUeRrc::m_state),
+                      MakeTraceSourceAccessor (&LteUeRrc::m_intstate),
                       "ns3::TracedValueCallback::Int32")                 
      .AddAttribute ("SecondaryRRC",
                       "True if this is the RRC in charge of the secondary cell (MmWaveCell) for a MC device",
@@ -4237,7 +4237,10 @@ LteUeRrc::SwitchToState (State newState)
   std::cout<< Simulator::Now().GetSeconds()<<" "<<GetRnti()<<" LteUeRrc::SwitchToState from "<<g_ueRrcStateName[m_state]<<" --> "<<g_ueRrcStateName[newState]<<std::endl;
   
   State oldState = m_state;
+
   m_state = newState;
+  //m_intstate = newState;
+
   NS_LOG_INFO (this << " IMSI " << m_imsi << " RNTI " << m_rnti << " CellId " << m_cellId << " UeRrc "
                     << ToString (oldState) << " --> " << ToString (newState));
   m_stateTransitionTrace (m_imsi, m_cellId, m_rnti, oldState, newState);
@@ -4308,17 +4311,19 @@ LteUeRrc::SwitchToState (State newState)
   switch (newState)
     {
     case IDLE_START:
+      m_intstate = 0;
       NS_FATAL_ERROR ("cannot switch to an initial state");
       break;
 
-    case IDLE_CELL_SEARCH:
-    case IDLE_WAIT_MIB_SIB1:
-    case IDLE_WAIT_MIB:
-    case IDLE_WAIT_SIB1:
-    case IDLE_PAGING:
+    case IDLE_CELL_SEARCH: m_intstate = 1;
+    case IDLE_WAIT_MIB_SIB1: m_intstate = 2;
+    case IDLE_WAIT_MIB: m_intstate = 3;
+    case IDLE_WAIT_SIB1: m_intstate = 4;
+    case IDLE_PAGING: m_intstate = 5;
       break;
 
     case IDLE_CAMPED_NORMALLY:
+      m_intstate = 6;
       if (m_connectionPending)
         {
           SwitchToState (IDLE_WAIT_SIB2);
@@ -4326,6 +4331,7 @@ LteUeRrc::SwitchToState (State newState)
       break;
 
     case IDLE_WAIT_SIB2:
+     m_intstate = 7;
       if (m_hasReceivedSib2)
         {
           NS_ASSERT (m_connectionPending);
@@ -4333,17 +4339,18 @@ LteUeRrc::SwitchToState (State newState)
         }
       break;
 
-    case IDLE_RANDOM_ACCESS:
-    case IDLE_CONNECTING:
-    case CONNECTED_NORMALLY:
-    case CONNECTED_HANDOVER:
-    case CONNECTED_PHY_PROBLEM:
-    case CONNECTED_REESTABLISHING:
+    case IDLE_RANDOM_ACCESS:m_intstate = 8;
+    case IDLE_CONNECTING: m_intstate = 9;
+    case CONNECTED_NORMALLY: m_intstate = 10;
+    case CONNECTED_HANDOVER: m_intstate = 11;
+    case CONNECTED_PHY_PROBLEM: m_intstate = 12;
+    case CONNECTED_REESTABLISHING: m_intstate = 13;
       break;
 
-    case RRC_INACTIVE:
+    case RRC_INACTIVE: m_intstate = 14;
       break;
     case INACTIVE_PAGING:
+        m_intstate = 15;
         if(true == m_hasReceivedPaging)
           {
               SwitchToState(CONNECTED_NORMALLY);
@@ -4361,7 +4368,7 @@ LteUeRrc::SwitchToState (State newState)
               SwitchToState(RRC_INACTIVE);
           }
           break;
-    case IDLE_DS:
+    case IDLE_DS: m_intstate = 16;
           break;
     default:
       break;

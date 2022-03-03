@@ -54,6 +54,8 @@
 #include "ns3/simple-device-energy-model.h"
 #include "ns3/energy-source-container.h"
 #include "ns3/rrc-energy-module.h"
+#include "ns3/traced-value.h"
+#include "ns3/trace-source-accessor.h"
 
 #define MIN_NO_CC 1
 #define MAX_NO_CC 5 // this is the maximum number of carrier components allowed by 3GPP up to R13
@@ -809,6 +811,7 @@ private:
 
   /// The current UE RRC state.
   State m_state;
+  TracedValue<int32_t> m_intstate;
 
   /// The unique UE identifier.
   uint64_t m_imsi;

@@ -10,11 +10,29 @@
 
 namespace ns3 {
 
- RrcEnergyHelper::RrcEnergyHelper ()
+RrcEnergyHelper::RrcEnergyHelper ()
 {
     m_radioEnergy.SetTypeId ("ns3::RrcEnergy");
-       // m_depletionCallback.Nullify ();
-       // m_rechargedCallback.Nullify ();
+     m_depletionCallback.Nullify ();
+     m_rechargedCallback.Nullify ();
+}
+
+RrcEnergyHelper::~RrcEnergyHelper ()
+{
+
+}
+
+void
+RrcEnergyHelper::SetDepletionCallback (
+    RrcEnergy::RrcEnergyDepletionCallback callback )
+{
+    m_depletionCallback = callback;
+}
+void
+RrcEnergyHelper::SetRechargedCallback (
+    RrcEnergy::RrcEnergyRechargedCallback callback )
+{
+    m_rechargedCallback = callback;
 }
 
 
@@ -54,11 +72,11 @@ RrcEnergyHelper::DoInstall(Ptr<NetDevice> device,
         // mmwaveDevice->DoDispose ();
         mcDevice = DynamicCast<ns3::mmwave::McUeNetDevice> (device);
         //mmwavePhy = mcDevice->GetMmWavePhy ();
-        dev = DynamicCast<ns3::LteUeRrc> (mcDevice->GetRrc());    
+       // dev = DynamicCast<ns3::LteUeRrc> (mcDevice->GetRrc());    
     }
     
     
-    dev->TraceConnectWithoutContext("State",MakeCallback (&RrcEnergy::rrcenergystatechange, model));
+    //dev->TraceConnectWithoutContext("State",MakeCallback (&RrcEnergy::rrcenergystatechange, model));
     source->AppendDeviceEnergyModel (model);
     model->SetEnergySource (source);
 

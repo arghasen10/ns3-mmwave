@@ -10,6 +10,18 @@ namespace ns3 {
 class RrcEnergy
 {
 public:
+	static TypeId GetTypeId (void);
+	void SetNode (Ptr<Node> node);
+	void SetEnergySource (Ptr<EnergySource> source);
+    /**
+     * Callback type for energy depletion handling.
+     */
+    typedef Callback<void> RrcEnergyDepletionCallback;
+
+    /**
+     * Callback type for energy recharged handling.
+     */
+    typedef Callback<void> RrcEnergyRechargedCallback;
     LiIonEnergySource LIES;
     RrcEnergy();
     ~RrcEnergy();
@@ -29,6 +41,23 @@ public:
 	void Only_deepsleep_decrease(double idle_time_units);
 	void Only_drx_decrease(double idle_time_units);
 	void Only_paging_decrease(double idle_time_units);
+	void SetEnergyDepletionCallback (RrcEnergyDepletionCallback callback);
+
+    /**
+     * \param callback Callback function.
+     *
+     * Sets callback for energy recharged handling.
+     */
+    void SetEnergyRechargedCallback (RrcEnergyRechargedCallback callback);
+	void rrcenergystatechange(int32_t oldstate, int32_t newstate);
+
+private:
+    RrcEnergyRechargedCallback m_energyRechargedCallback;
+    RrcEnergyDepletionCallback m_energyDepletionCallback;	
+	Ptr<Node> m_node;
+	Ptr<EnergySource> m_source;
+	
+	TracedValue<double> m_totalEnergyConsumption;
     
 };
 }

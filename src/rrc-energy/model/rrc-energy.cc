@@ -8,6 +8,9 @@
 #include <ns3/nstime.h>
 #include <iomanip>
 #include <limits>
+#include "ns3/log.h"
+#include "ns3/config-store-module.h"
+#include "ns3/config.h"
 namespace ns3 {
 
 static const std::string g_ueRrcStateName[17] =
@@ -34,17 +37,74 @@ static const std::string g_ueRrcStateName[17] =
 double idleTime = 0;
 Time m_lastUpdatedTime ;
 
+
+TypeId
+RrcEnergy::GetTypeId (void)
+{
+    static TypeId tid = TypeId ("ns3::RrcEnergy")
+        .SetParent<DeviceEnergyModel> ()
+        .AddConstructor<RrcEnergy> ()
+        .AddTraceSource ("TotalEnergyConsumption",
+                        "Total energy consumption of the radio device.",
+                        MakeTraceSourceAccessor (&RrcEnergy::m_totalEnergyConsumption),
+                        "ns3::TracedValueCallback::Double")
+        
+  ;
+  return tid;
+}
+
+
 RrcEnergy::RrcEnergy()
 :m_time_last_tx(0),
 m_time_last_rx(0),
 m_total(0)
 {
-
+    m_energyDepletionCallback.Nullify ();
 }
 
 RrcEnergy::~RrcEnergy()
 {
 
+}
+void
+RrcEnergy::SetNode (Ptr<Node> node)
+{
+  //NS_LOG_FUNCTION (this << node);
+  NS_ASSERT (node != NULL);
+  m_node = node;
+}
+
+void
+RrcEnergy::SetEnergySource (Ptr<EnergySource> source)
+{
+    //NS_LOG_FUNCTION (this << source);
+    NS_ASSERT (source != NULL);
+    m_source = source;
+}
+void
+RrcEnergy::SetEnergyDepletionCallback (
+  RrcEnergyDepletionCallback callback
+)
+{
+  //NS_LOG_FUNCTION (this);
+//   if (callback.IsNull ())
+//   {
+//     NS_LOG_DEBUG ("RrcEnergy:Setting NULL energy depletion callback!");
+//   }
+  m_energyDepletionCallback = callback;
+}
+
+void
+RrcEnergy::SetEnergyRechargedCallback (
+  RrcEnergyRechargedCallback callback
+)
+{
+//   NS_LOG_FUNCTION (this);
+//   if (callback.IsNull ())
+//   {
+//     NS_LOG_DEBUG ("RrcEnergy:Setting NULL energy recharged callback!");
+//   }
+  m_energyRechargedCallback = callback;
 }
 
 void
@@ -153,62 +213,62 @@ void RrcEnergy::both_downlink_and_uplink(double idleTime)
 	std::cout<<"Both Transmit and Receive chain is consuming power "<<std::endl;
 }
 
-void rrcenergystatechange(int32_t oldstate, int32_t newstate)
-{
-	// //add switch states
-	// idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
-	// RrcEnergy::Only_idle_decrease(idleTime);
+// void RrcEnergy::rrcenergystatechange(int32_t oldstate, int32_t newstate)
+// {
+// 	// //add switch states
+// 	// idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+// 	// RrcEnergy::Only_idle_decrease(idleTime);
     
-    // m_lastUpdatedTime=Simulator::Now();
-    // std::cout<<Simulator::Now().GetSeconds()<<" "<<GetRnti() <<" ";
-    // two(idleTime);
-	switch (newstate)
-  {
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-      case 6:
-      case 7:
-      case 8:
-      case 9:
-          break;
-      case 10:
-	      idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
-		  m_lastUpdatedTime=Simulator::Now();
-          Only_idle_decrease(idleTime);
-          break;
-      case 11:
-      case 12:
-      case 13:
-          break;
-      case 14:
-	      idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
-          m_lastUpdatedTime=Simulator::Now();
-          Only_paging_decrease(idleTime);
-          break;
+//     // m_lastUpdatedTime=Simulator::Now();
+//     // std::cout<<Simulator::Now().GetSeconds()<<" "<<GetRnti() <<" ";
+//     // two(idleTime);
+// 	switch (newstate)
+//   {
+//       case 0:
+//       case 1:
+//       case 2:
+//       case 3:
+//       case 4:
+//       case 5:
+//       case 6:
+//       case 7:
+//       case 8:
+//       case 9:
+//           break;
+//       case 10:
+// 	      idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+// 		  m_lastUpdatedTime=Simulator::Now();
+//           Only_idle_decrease(idleTime);
+//           break;
+//       case 11:
+//       case 12:
+//       case 13:
+//           break;
+//       case 14:
+// 	      idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+//           m_lastUpdatedTime=Simulator::Now();
+//           Only_paging_decrease(idleTime);
+//           break;
 
-      case 15:
+//       case 15:
           
-          idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
-          m_lastUpdatedTime=Simulator::Now();
-		  Only_drx_decrease(idleTime);
-          break;
+//           idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+//           m_lastUpdatedTime=Simulator::Now();
+// 		  Only_drx_decrease(idleTime);
+//           break;
 
-      case 16:
+//       case 16:
           
-          idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
-          m_lastUpdatedTime=Simulator::Now();
-          Only_deepsleep_decrease(idleTime);
-          break;
+//           idleTime= ((Simulator::Now()-m_lastUpdatedTime).GetNanoSeconds());
+//           m_lastUpdatedTime=Simulator::Now();
+//           Only_deepsleep_decrease(idleTime);
+//           break;
 
-      default:
-          break;
-    }
+//       default:
+//           break;
+//     }
 
-}
+// }
 
 }
 
