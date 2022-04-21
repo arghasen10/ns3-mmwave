@@ -640,7 +640,7 @@ NotifyConnectionEstablishedEnb (std::string context, uint64_t imsi, uint16_t cel
    {
      int oldcellid = ue_cellid_usinghandover[nodeid];
      ue_list[oldcellid].erase(nodeid);
-     no_of_active_ue[cellid]-= active[nodeid];
+     no_of_active_ue[oldcellid]-= active[nodeid];
    }
    
    ue_list[cellid].insert(nodeid);
@@ -813,8 +813,8 @@ map<uint16_t,int> base_station_state;
 map<pair<uint16_t,uint32_t>,double> connected_ue_energy;
 map<uint16_t,int> no_of_active_ue;
    */
-  outFile<<currenttime<<","<<cellid<<","<<action[cellid]<<","<<ue_list[cellid].size()<<","<<no_of_active_ue[cellid]
-  <<!base_station_state[cellid]<<","<<enb_energy_map[cellid]<<"\n";
+  outFile<<currenttime<<","<<cellid<<","<<action[cellid]<<","<<ue_list[cellid].size()<<","<<no_of_active_ue[cellid]<<","
+  <<1-base_station_state[cellid]<<","<<enb_energy_map[cellid]<<"\n";
   Simulator::Schedule (Seconds (1), &base_station_data, cellid);
 }
 
@@ -832,8 +832,18 @@ void MakeBaseStationSleep (Ptr<MmWaveSpectrumPhy> endlphy, Ptr<MmWaveSpectrumPhy
 
     int oldval = base_station_state[cellid];
     if(oldval == val) action[cellid] = 2;
-    else if(val == 1 && oldval == 0)  action[cellid] = 1;
-    else action[cellid] = 0;
+    else
+    {
+      if(val == 1 && oldval == 0)  action[cellid] = 1;
+       else action[cellid] = 0;
+      double currenttime = Simulator::Now ().GetSeconds ();
+      std::ofstream outFile;
+      outFile.open (outputDir + tracefilename1, std::ios::out | std::ios::app);
+      outFile<<currenttime<<","<<cellid<<","<<action[cellid]<<","<<ue_list[cellid].size()<<","<<no_of_active_ue[cellid]<<","
+      <<1-base_station_state[cellid]<<","<<enb_energy_map[cellid]<<"\n";
+       
+    }
+    
   
   base_station_state[cellid] = val; 
   endlphy->SetAttribute ("MakeItSleep", BooleanValue(val));
@@ -853,7 +863,8 @@ void start_ue_application(Ptr<Application> app, uint32_t nodeid)
    double curt = Simulator::Now().GetSeconds();
    app->SetStartTime(Simulator::Now());
    active[nodeid] =1;
-
+   int cellid = ue_cellid_usinghandover[nodeid];
+   no_of_active_ue[cellid]++;
    Simulator::Schedule (Seconds(appTime-curt)  , &stop_ue_application, app,nodeid);
 } 
 
