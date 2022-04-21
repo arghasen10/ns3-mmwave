@@ -868,8 +868,8 @@ map<uint16_t,int> base_station_state;
 map<pair<uint16_t,uint32_t>,double> connected_ue_energy;
 map<uint16_t,int> no_of_active_ue;
    */
-  outFile<<currenttime<<" "<<cellid<<" "<<action[cellid]<<" "<<ue_list[cellid].size()<<" "<<no_of_active_ue[cellid]<<" "
-  <<1-base_station_state[cellid]<<" "<<enb_energy_map[cellid]<<"\n";
+  outFile<<currenttime<<","<<cellid<<","<<action[cellid]<<","<<ue_list[cellid].size()<<","<<no_of_active_ue[cellid]<<","
+  <<1-base_station_state[cellid]<<","<<enb_energy_map[cellid]<<"\n";
   Simulator::Schedule (Seconds (1), &base_station_data, cellid);
 }
  // NodeContainer enbNodes;
